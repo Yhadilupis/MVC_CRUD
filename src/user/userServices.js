@@ -3,27 +3,52 @@ var key = 'somekey234567884456753456';
 var encryptor = require('simple-encryptor')(key);
 
 module.exports.createUserDBService = (userDetails) => {
-
    return new Promise(function myFn(resolve, reject) {
-       var userModelData = new userModel();
-
-       userModelData.firstname = userDetails.firstname;
-       userModelData.lastname = userDetails.lastname;
-       userModelData.email = userDetails.email;
-       userModelData.password = userDetails.password;
-       var encrypted = encryptor.encrypt(userDetails.password);
-       userModelData.password = encrypted;
-
-       userModelData.save(function resultHandle(error, result) {
-
-           if (error) {
-               reject(false);
+     userModel.findOne(
+       {
+         $and: [
+           {
+             email: userDetails.email,
+           },
+         ],
+       },
+       function search(req, res) {
+         console.log("Antes");
+         console.log(res);
+         try {
+           console.log("entro");
+           if (res !== null) {
+             console.log("entro 2");
+             reject({ status: false, msg: "Eror" });
            } else {
-               resolve(true);
+             console.log("Falso");
+             let userModelData = new userModel();
+ 
+             userModelData.firstname = userDetails.firstname;
+             userModelData.lastname = userDetails.lastname;
+             userModelData.email = userDetails.email;
+             userModelData.password = userDetails.password;
+             let encrypted = encryptor.encrypt(userDetails.password);
+             userModelData.password = encrypted;
+ 
+             userModelData.save(function resultHandle(error, result) {
+               if (error) {
+                 reject(false);
+               } else {
+                 resolve(true);
+               }
+             });
            }
-       });
+         } catch (e) {
+           reject({ status: false, msg: "Algo sucedio" });
+         }
+       }
+     );
+   }).catch((error) => {
+     console.log("Entro en el catch");
+     console.log(error);
    });
-}
+ };
 
 module.exports.loginuserDBService = (userDetails)=>  {
    return new Promise(function myFn(resolve, reject)  {
